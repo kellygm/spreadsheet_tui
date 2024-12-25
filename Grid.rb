@@ -1,8 +1,7 @@
-require_relative 'Primitive'
-require_relative 'Evaluator'
-require_relative 'Serializer'
-require_relative 'Cells'
-require_relative 'Operation'
+require_relative 'primitive'
+require_relative 'evaluator'
+require_relative 'serializer'
+require_relative 'operation'
 
 # a Grid abstraction that manages all the cells 
 

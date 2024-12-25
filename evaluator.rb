@@ -6,9 +6,9 @@
 # --- logical operations have boolean operands 
 # --- bultin functions have cell lvaules operands 
 
-require_relative 'Operation'
-require_relative 'Primitive'
-require_relative 'Serializer'
+require_relative 'operation'
+require_relative 'primitive'
+require_relative 'serializer'
 
 class Evaluator 
 

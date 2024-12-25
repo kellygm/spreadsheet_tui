@@ -2,11 +2,11 @@
 # Lexer abstraction, builds tokens
 #
 
-require_relative 'Primitive'
+require_relative 'primitive'
 require_relative 'evaluator'
-require_relative 'Grid'
-require_relative 'Operation'
-require_relative 'Token'
+require_relative 'grid'
+require_relative 'operation'
+require_relative 'token'
 
 
 class Lexer 

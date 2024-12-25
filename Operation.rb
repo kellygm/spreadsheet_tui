@@ -209,7 +209,7 @@ class Conditional
         @block2 = else_block
     end
     
-    def traverse(self, payload)
+    def traverse(visitor, payload)
         visitor.visit_conditional(self, payload)
     end
 end
@@ -223,7 +223,8 @@ class ForLoop
         @block = block 
     end
 
-    def traverse(self, payload)
+    def traverse(visitor, payload)
         visitor.visit_loop(self, payload)
     end
+
 end

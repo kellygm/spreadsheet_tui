@@ -3,7 +3,7 @@ require 'logger'
 
 require_relative 'primitive'
 require_relative 'operation'
-require_relative 'Evaluator'
+require_relative 'evaluator'
 require_relative 'serializer'
 require_relative 'token'
 require_relative 'lexer'

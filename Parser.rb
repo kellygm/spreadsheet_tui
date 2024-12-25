@@ -1,10 +1,9 @@
-require_relative 'Primitive'
-require_relative 'Operation'
+require_relative 'primitive'
+require_relative 'operation'
 require_relative 'evaluator'
-require_relative 'Lexer'
-require_relative 'Serializer'
-require_relative 'Grid'
-require_relative 'Cells'
+require_relative 'lexer'
+require_relative 'serializer'
+require_relative 'grid'
 
 #Parser abstraction. Accepts a list of tokens and assembles an AST using the 
 #model abstractions.
