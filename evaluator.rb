@@ -45,6 +45,8 @@ class Evaluator
             node.bool
         elsif node.is_a?(StringPrimitive)
             node.str
+        elsif node.is_a?(CellAddressPrimitive)
+            node.value
         else
             raise TypeError, "Type is not supported"
         end
@@ -217,7 +219,6 @@ class Evaluator
     end
 
     def  visit_negate(node, runtime)
-
         if node.value.is_a?(CellRValue)
             row = node.value.row.traverse(self, runtime)
             col = node.value.col.traverse(self, runtime)
@@ -231,11 +232,8 @@ class Evaluator
             else
                 raise TypeError, "Only integer and floats are accepted for NEGATION"
             end
-            
         end
-
         node_val = node.value.traverse(self, runtime)
-
         if node_val.is_a?(IntegerPrimitive)
             return IntegerPrimitive.new(-node_val.value)
 
@@ -319,13 +317,11 @@ class Evaluator
         right = node.right.traverse(self, runtime)
         # puts "Left: #{left}"
         # puts "Right: #{right}"
-
         if left.is_a?(CellAddressPrimitive) && right.is_a?(IntegerPrimitive)
             # get value at cell
             row = left.row.traverse(self, runtime).value
             col = left.col.traverse(self, runtime).value
             # puts "left is cell [#{row}, #{col}]"
-
             addr = CellAddressPrimitive.new(IntegerPrimitive.new(row), IntegerPrimitive.new(col))
             cell_value = runtime.grid.get_grid(addr)
             # puts "value at cell [#{row}, #{col}]: #{cell_value.value}"
@@ -335,16 +331,7 @@ class Evaluator
         end
 
         if left.is_a?(IntegerPrimitive) && right.is_a?(IntegerPrimitive)
-
             result = IntegerPrimitive.new(left.value << right.value)
-            # if node.left.is_a?(CellRValue)
-            #     row = node.left.row.traverse(self, runtime).value
-            #     col = node.left.col.traverse(self, runtime).value
-            #     # puts "[#{row}, #{col}]"
-            #     # addr = CellAddressPrimitive.new(IntegerPrimitive.new(row), IntegerPrimitive.new(col))
-            #     # runtime.grid.set_grid(addr, result)
-            # end
-
             return result
         else 
             raise TypeError, "Left-Shift values must be integers"
@@ -355,16 +342,27 @@ class Evaluator
         left = node.left.traverse(self, runtime)
         right = node.right.traverse(self, runtime)
 
+        if left.is_a?(CellAddressPrimitive) && right.is_a?(IntegerPrimitive)
+            row = left.row.traverse(self, runtime).value
+            col = left.col.traverse(self, runtime).value
+            addr = CellAddressPrimitive.new(IntegerPrimitive.new(row), IntegerPrimitive.new(col))
+            cell_value = runtime.grid.get_grid(addr)        
+            result = IntegerPrimitive.new(cell_value.value >> right.value)
+            return result
+        end
+
+        if left.is_a?(IntegerPrimitive) && right.is_a?(CellAddressPrimitive)
+            row = right.row.traverse(self, runtime).value
+            col = right.col.traverse(self, runtime).value
+            addr = CellAddressPrimitive.new(IntegerPrimitive.new(row), IntegerPrimitive.new(col))
+            cell_value = runtime.grid.get_grid(addr)        
+            result = IntegerPrimitive.new(left.value >> cell_value.value)
+            return result
+        end
+
         if left.is_a?(IntegerPrimitive) && right.is_a?(IntegerPrimitive)
             # perform right shift
             result = IntegerPrimitive.new(left.value >> right.value)
-            # update corresponding cell in grid
-            # if node.left.is_a?(CellRValue)
-            #     row = node.left.row.traverse(self, runtime).value
-            #     col = node.left.col.traverse(self, runtime).value
-            #     addr = CellAddressPrimitive.new(IntegerPrimitive.new(row), IntegerPrimitive.new(col))
-            #     runtime.grid.set_grid(addr, result)            
-            # end
             return result
         else 
             raise TypeError, "Right-Shift values must be integers"
@@ -403,15 +401,18 @@ class Evaluator
     def visit_less_than(node, runtime)
         left = node.left.traverse(self, runtime)
         right = node.right.traverse(self, runtime)
+
         if left.is_a?(IntegerPrimitive) && right.is_a?(IntegerPrimitive)
             return BooleanPrimitive.new((left.value.to_i < right.value.to_i))
         elsif left.is_a?(FloatPrimitive) && right.is_a?(FloatPrimitive)
             return BooleanPrimitive.new((left.value.to_f < right.value.to_f))
+        elsif left.is_a?(FloatPrimitive) && right.is_a?(IntegerPrimitive) || left.is_a?(IntegerPrimitive) && right.is_a?(FloatPrimitive)
+            return BooleanPrimitive.new(left.value.to_f < right.value.to_f)
         else
         # Check for cell address primitives
         left_val = left.is_a?(CellAddressPrimitive) ? runtime.grid.get_grid(left) : left.value
-        right_val = right.is_a?(CellAddressPrimitive) ? runtime.grid.get_grid(right) : left.value
-        return BooleanPrimitive.new(left_val < right_val)
+        right_val = right.is_a?(CellAddressPrimitive) ? runtime.grid.get_grid(right) : right.value
+        return BooleanPrimitive.new(convert_to_num(left_val) < convert_to_num(right_val))
         end
     end
 

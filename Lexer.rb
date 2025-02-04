@@ -211,9 +211,9 @@ class Lexer
                     emit_token(:true, start_index, @i)
                 elsif keyword == 'false' 
                     emit_token(:false, start_index, @i)
-                elsif keyword == 'float'
+                elsif keyword == 'castf'
                     emit_token(:to_f, start_index, @i)
-                elsif @tokens_so_far == 'int'
+                elsif @tokens_so_far == 'casti'
                     emit_token(:to_i, start_index, @i)
                 elsif @tokens_so_far == 'boolean'
                     emit_token(:bool, start_index, @i)

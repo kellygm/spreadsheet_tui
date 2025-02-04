@@ -9,7 +9,7 @@ class Primitive
     end
 end
 
-class Cell
+class Cells
     attr_accessor :row, :col 
     def initialize(row, col)
         @row = row
@@ -54,13 +54,15 @@ class CellAddressPrimitive
     end
 end
 
-class CellRValue < Cell
+# pair of column and row expressions that yields the value at its address when evaluted
+class CellRValue < Cells
     def traverse(visitor, payload)
         visitor.visit_rvalue(self, payload)
     end
 end
 
-class CellRValue < Cell
+# pair of column and row expressions that yields an address primitve when evaluated
+class CellLValue < Cells
     def traverse(visitor, payload)
         visitor.visit_lvalue(self, payload)
     end

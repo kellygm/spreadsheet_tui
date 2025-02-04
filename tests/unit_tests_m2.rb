@@ -1,7 +1,7 @@
-require_relative 'Parser'
-require_relative 'Lexer'
-require_relative 'Runtime'
-require_relative 'Serializer'
+require_relative '../parser'
+require_relative '../lexer'
+require_relative '../runtime'
+require_relative '../serializer'
 
 # Tests for Parser and Lexer 
 
@@ -16,13 +16,12 @@ runtime = Runtime.new(Grid.new(6,6))
 exp1 = "(5 + 2) * 3 % 4"
 
 lex = Lexer.new(exp1)
-result = lex.print_tokens
 parser = Parser.new(lex)
 puts "(5 + 2) * 3 % 4 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
 #Rvalue lookup and comparison: #[1 - 1, 0] < #[1 * 1, 1] -> should parse to 'false'
-exp3 = "[1 - 1, 0] < #[1 * 1, 1]"
+exp3 = "#[1 - 1, 0] < #[1 * 1, 1]"
 addr1 = CellAddressPrimitive.new(IntegerPrimitive.new(0), IntegerPrimitive.new(0))
 addr2 = CellAddressPrimitive.new(IntegerPrimitive.new(1), IntegerPrimitive.new(1))
 runtime.grid.set_grid(addr1, IntegerPrimitive.new(1))
@@ -31,7 +30,7 @@ runtime.grid.set_grid(addr2, IntegerPrimitive.new(0))
 lexer = Lexer.new(exp3)
 parser = Parser.new(lexer)
 
-puts "[1 - 1, 0] < #[1 * 1, 1] PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts "#[1 - 1, 0] < #[1 * 1, 1] PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
 #Logic and comparison: (5 > 3) && !(2 > 8) --> should parse to 'true'
@@ -50,13 +49,14 @@ runtime.grid.set_grid(CellAddressPrimitive.new(IntegerPrimitive.new(1), IntegerP
 runtime.grid.set_grid(CellAddressPrimitive.new(IntegerPrimitive.new(2), IntegerPrimitive.new(1)), IntegerPrimitive.new(2.0))
 
 
-exp5 = "1 + sum([0, 0], [2, 1])"
 puts "Grid was initialized with the following cell values..."
 puts "[0,0] --> #{runtime.grid.get_grid(CellAddressPrimitive.new(IntegerPrimitive.new(0), IntegerPrimitive.new(0))).value}"
 puts "[0,1] --> #{runtime.grid.get_grid(CellAddressPrimitive.new(IntegerPrimitive.new(0), IntegerPrimitive.new(1))).value}"
 puts "[1,0] --> #{runtime.grid.get_grid(CellAddressPrimitive.new(IntegerPrimitive.new(1), IntegerPrimitive.new(0))).value}"
 puts "[1,1] --> #{runtime.grid.get_grid(CellAddressPrimitive.new(IntegerPrimitive.new(1), IntegerPrimitive.new(1))).value}"
 puts "[2,1] --> #{runtime.grid.get_grid(CellAddressPrimitive.new(IntegerPrimitive.new(2), IntegerPrimitive.new(1))).value}"
+
+exp5 = "1 + sum([0,0], [2,1])"
 lexer = Lexer.new(exp5)
 parser = Parser.new(lexer)
 
@@ -64,40 +64,41 @@ puts "1 + sum([0, 0], [2, 1]) PARSED to... #{parser.parse.traverse(Evaluator.new
 puts
 
 #Casting: float(10) / 4.0 --> should parse to '2.5'
-exp6 = "float(10) / 4.0"
+exp6 = "castf(10) / 4.0"
 lexer = Lexer.new(exp6)
 parser = Parser.new(lexer)
 
-puts "float(10) / 4.0 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts "castf(10) / 4.0 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts
+
+exp6 = "casti(10.2) / 2"
+lexer = Lexer.new(exp6)
+parser = Parser.new(lexer)
+
+puts "casti(10.2) / 2 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
 
 # Rvalue lookup and Left shift: [0,0] << 3 --> should parse to '24'
-exp7 = "[0,0] << 3"
+exp7 = "#[0,0] << 3"
 runtime.grid.set_grid(addr1, IntegerPrimitive.new(3))
 lexer = Lexer.new(exp7)
 parser = Parser.new(lexer)
 puts "value at cell [0,0] is... #{runtime.grid.get_grid(addr1).traverse(Serializer.new, runtime)}"
 
-puts "[0,0] << 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts "#[0,0] << 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
 # Rvalue lookup and Right shift: [0,0] >> 3 --> should parse to '10'
-exp8 = "[0,0] >> 3"
+exp8 = "#[0,0] >> 3"
 runtime.grid.set_grid(addr1, IntegerPrimitive.new(80))
 lexer = Lexer.new(exp8)
 parser = Parser.new(lexer)
 puts "value at cell [0,0] is... #{runtime.grid.get_grid(addr1).traverse(Serializer.new, runtime)}"
 
-puts "[0,0] >> 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts "#[0,0] >> 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
-# Casting: Casting: float(10) / 4.0 --> should be '2.5'
-exp9 = "float(10) / 4.0"
-lexer = Lexer.new(exp9)
-parser = Parser.new(lexer)
-puts "float(10) / 4.0 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
-puts
 
 # Exponentiation: 2 ** 3 ** 2 --> should be '64'
 exp10 = "2 ** 3 ** 2"
@@ -118,11 +119,11 @@ puts
 #Rvalue lookup and sum: #[0, 0] + 3 -> should parse to '6'
 addr1 = CellAddressPrimitive.new(IntegerPrimitive.new(0), IntegerPrimitive.new(0))
 runtime.grid.set_grid(addr1, IntegerPrimitive.new(3))
-exp2 = "[0, 0] + 3"
+exp2 = "#[0, 0] + 3"
 
 lexer = Lexer.new(exp2)
 parser = Parser.new(lexer)
-puts "[0, 0] + 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
+puts "#[0, 0] + 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
 # Max and Comparison: max([0,0], [2,1]) < 5 --> should be 'false'
@@ -163,14 +164,14 @@ parser = Parser.new(lexer)
 puts "(1 + 2) * (3 + 4) ^ 2 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
-# Comparison Combination: (1+2) < 4 && (3 ** 1) >= 0
+# Comparison Combination: (1+2) < 4 && (3 ** 1) >= 0 --> should be 'true'
 exp16 = "(1+2) < 4 && (3 ** 1) >= 0"
 lexer = Lexer.new(exp16)
 parser = Parser.new(lexer)
 puts "(1+2) < 4 && (3 ** 1) >= 0 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"
 puts
 
-exp17 = "~6 - 3"
+exp17 = "~6 - 3" # --> should be '-10'
 lexer = Lexer.new(exp17)
 parser = Parser.new(lexer)
 puts "~6 - 3 PARSED to... #{parser.parse.traverse(Evaluator.new, runtime).traverse(Serializer.new, runtime)}"

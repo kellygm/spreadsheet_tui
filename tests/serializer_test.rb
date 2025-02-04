@@ -1,10 +1,9 @@
-require_relative 'Serializer'
-require_relative 'Evaluator'
-require_relative 'Primitive'
-require_relative 'Cells'
-require_relative 'Runtime'
-require_relative 'Grid'
-require_relative 'Operation'
+require_relative '../Serializer'
+require_relative '../Evaluator'
+require_relative '../Primitive'
+require_relative '../Runtime'
+require_relative '../Grid'
+require_relative '../Operation'
 
 # Tests after Milestone I changes 
 runtime = Runtime.new(Grid.new(6,6))

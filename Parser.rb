@@ -273,19 +273,29 @@ class Parser
     # parse cell address primitive, either brackets or with pound symbol
     def parse_celladdr
         if has(:pound)
-            advance # go past the pound sign
+            advance # go past the pound sign'
+            raise "Expected left bracket [" unless has(:left_bracket)
+            advance # skip '['
+            left = parse_expression
+            raise "Expected a comma after first part of cell addr, found #{@tokens[@i].source_txt}" unless has(:comma)
+            advance # skip ,
+            right = parse_expression
+            raise "Expected a right bracket after second part of cell addr, found #{@tokens[@i].source_txt}" unless has(:right_bracket)
+            advance # skip ]
+            # exp = CellAddressPrimitive.new(left, right)
+            # exp
+            CellRValue.new(left, right)
+        else
+            raise "Expected left bracket [" unless has(:left_bracket)
+            advance # skip '['
+            left = parse_expression
+            raise "Expected a comma after first part of cell addr, found #{@tokens[@i].source_txt}" unless has(:comma)
+            advance # skip ,
+            right = parse_expression
+            raise "Expected a right bracket after second part of cell addr, found #{@tokens[@i].source_txt}" unless has(:right_bracket)
+            advance
+            CellLValue.new(left, right)
         end
-        raise "Expected left bracket [" unless has(:left_bracket)
-        advance # skip '['
-        left = parse_expression
-        raise "Expected a comma after first part of cell addr, found #{@tokens[@i].source_txt}" unless has(:comma)
-        advance # skip ,
-        right = parse_expression
-        raise "Expected a right bracket after second part of cell addr, found #{@tokens[@i].source_txt}" unless has(:right_bracket)
-        advance # skip ]
-        # exp = CellAddressPrimitive.new(left, right)
-        # exp
-        CellRValue.new(left, right)
     end
 
     # parse statistical operations
@@ -301,7 +311,7 @@ class Parser
         advance # skip )
         case operator.type
         when :sum
-            raise "Both arguments must be CellRValues" unless left.is_a?(CellRValue) && right.is_a?(CellRValue)
+            raise "Both arguments must be CellLValues" unless left.is_a?(CellLValue) && right.is_a?(CellLValue)
             Sum.new(left, right)
         when :min
             Min.new(left, right)
