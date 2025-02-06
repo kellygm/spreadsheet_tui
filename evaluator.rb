@@ -147,16 +147,16 @@ class Evaluator
         # puts "type of a: #{a}"
         # puts "type of b: #{b}"
 
-        if a.is_a?(CellAddressPrimitive)
-            row = a.row.traverse(self, runtime)
-            col = a.col.traverse(self, runtime)
-            a_val = runtime.grid.get_grid(a).value
-            # puts "got cell value: #{a_val}"
+        # if a.is_a?(CellAddressPrimitive)
+        #     row = a.row.traverse(self, runtime)
+        #     col = a.col.traverse(self, runtime)
+        #     a_val = runtime.grid.get_grid(a).value
+        #     # puts "got cell value: #{a_val}"
+        # else
+        #     a_val = convert_to_num(a)
+        # end
 
-        else
-            a_val = convert_to_num(a)
-        end
-
+        a_val = convert_to_num(a)
         b_val = convert_to_num(b)
 
         # puts "value of a: #{a_val}"
@@ -168,7 +168,7 @@ class Evaluator
 
         if a_val.is_a?(Integer) && b_val.is_a?(Integer)
             return IntegerPrimitive.new(a_val * b_val)
-        elsif a_val.is_a?(Float) && b_val.is_a?(Float)
+        elsif a_val.is_a?(Float) || b_val.is_a?(Float)
             return FloatPrimitive.new(a_val * b_val)
         else 
             raise TypeError, "Unsupported type for operation MULTIPLY"
@@ -197,7 +197,7 @@ class Evaluator
         b = convert_to_num(b)
         if a.is_a?(Integer) && b.is_a?(Integer)
             return IntegerPrimitive.new(a ** b)
-        elsif a.is_a?(Float) && b.is_a?(Float)
+        elsif a.is_a?(Float) || b.is_a?(Float)
             return FloatPrimitive.new(a ** b)
         else 
             raise TypeError, "The type of the node is not supported for EXPONENT"
@@ -211,7 +211,7 @@ class Evaluator
         b = convert_to_num(b)
         if a.is_a?(Integer) && b.is_a?(Integer)
             return IntegerPrimitive.new(a % b)
-        elsif a.is_a?(Float) && b.is_a?(Float)
+        elsif a.is_a?(Float) || b.is_a?(Float)
             return FloatPrimitive.new(a % b)
         else
             raise TypeError, "The type of the node(a: #{a}, b: #{b}) is not supported for MODULO"
@@ -511,7 +511,7 @@ def visit_max(node, runtime)
                 cell = runtime.grid.get_grid(address)
                 if cell.is_a?(IntegerPrimitive) || cell.is_a?(FloatPrimitive)
                     # skip 0-valued or empty cells 
-                    if cell.value != 0
+                    if cell.value != nil || cell.value != 0
                         sum += cell.value.to_f
                         # puts "accessing cell [#{x},#{y}]..."
                         # puts "#{cell.value} added to sum"
@@ -522,19 +522,58 @@ def visit_max(node, runtime)
         FloatPrimitive.new(sum.round(2))
     end
 
-    # evalute a block and return value evaluted by last statement 
+# ----------------------------------------------------------------------------------------------------
+# VARIABLE REFERENCES AND LOOPS:  
+# ----------------------------------------------------------------------------------------------------
+    
+    # evalute all statements in a block
+    # save the evaluated result in some way
+    # return the value produced from final statement
     def visit_block(node, runtime)
+        results = []
+        for statement in node.statements
+            # puts "evaluating statement... #{statement}"
+            results.append(statement.traverse(self, runtime))
+        end
+        return results[-1]
     end
 
-    # evaluate condition and choose which block to evaluate
+    # look up and return associated primitive value stored in runtime
+    def visit_variable_ref(node, runtime)
+        #TODO: raise error if unknown variable
+        raise TypeError "variable '#{node.variable}' is undefined" unless runtime.get_variable(node.variable) != nil
+        # puts "#{runtime.get_variable(node.variable)}"
+        return runtime.get_variable(node.variable)
+    end
+
+    # evaluate the right-hand side to a primitive and store 
+    # the binding key-value store maintained in runtime
+    def visit_assignment(node, runtime)
+        var = node.right_node.traverse(self, runtime)
+        # puts "`#{node.identifier.to_s}` assigned with value `#{var.value}`"
+        runtime.set_variable(node.identifier, var)
+    end
+
+    # evaluate condition and choose which block to evaluate 
     def visit_conditional(node, runtime)
-        cond = node.condition,traverse(self, runtime)
+        condition = node.condition.traverse(self, runtime)
+        # TODO: raise type error if condition does not parse down to boolean
+        raise TypeError "condition must evaluate to a BOOLEAN" unless condition.is_a?(BooleanPrimitive)
         result = nil
-        if cond
-            node.if_block.traverse(self, runtime)
+        if condition
+            result = node.if_block.traverse(self, runtime)
         else
-            node.else_block.traverse(self, runtime)
+            result = node.else_block.traverse(self, runtime)
         end
+        return result
+    end
+
+    # iterate through the 2d window of cells and assign each cell's value to a local variable with the given name 
+    # the block is evaluated for each cell in the given window.
+    # the value returned is the result of the final iteration
+    def visit_for_loop(node, runtime)
+        iter = node.iter
+        
     end
 
 end

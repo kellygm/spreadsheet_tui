@@ -33,6 +33,28 @@ class Serializer
     def visit_lvalue(node, payload)
         "[#{node.row.traverse(self, payload)}, #{node.col.traverse(self, payload)}]"
     end
+
+    def visit_assignment(node, payload)
+        "#{node.identifier} = #{node.right_node.traverse(self, payload)}"
+    end
+
+    def visit_variable_ref(node, payload)
+        "#{node.variable}"
+    end
+
+    def visit_conditional(node, payload)
+        "if #{node.condition.traverse(self, payload)}\n\t#{node.if_block.traverse(self, payload)}\nelse\n\t#{node.else_block.traverse(self, payload)}\n end"
+    end
+
+    def visit_block(node, payload)
+        for statement in node.statements
+            puts "#{statement.traverse(self, payload)}\n"
+        end
+    end
+
+    def visit_for_loop(node, payload)
+        "for #{node.iter} in #{node.start_addr.traverse(self, payload)}..#{node.end_addr.traverse(self,payload)}\n\t#{node.block.traverse(self, payload)}\n end"
+    end
 # ----------------------------------------------------------------------------
 # ARITHMETIC 
 # ----------------------------------------------------------------------------

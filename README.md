@@ -46,3 +46,6 @@ Design a terminal-based user interface for the spreadsheet using the Curses libr
 > - conditionals
 > - loops
 > - function calls
+> - variable assignments
+> - variable references
+> - block abstractions of statements

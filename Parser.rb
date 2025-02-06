@@ -36,11 +36,27 @@ class Parser
     # parse the complete list of tokens 
     # and return the root node of the AST
     def parse 
-        root = parse_expression
+        root = parse_block
         if @i < @tokens.length
             raise TypeError.new("Found unsupported token  '#{@tokens[@i].source_txt}' at index #{@i}\n")
         end
         root 
+    end
+
+    def parse_block
+        parse_expression
+    end
+
+    def parse_statement
+    end
+
+    def parse_assignment
+    end
+
+    def parse_var_decl
+    end
+
+    def parse_loops
     end
 
     # the root node

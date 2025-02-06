@@ -199,14 +199,53 @@ class IntToFloat < UnaryOperation
 end
 
 # -------------------------------------------
-# Loops
+# Variables and Flow
 # -------------------------------------------
+class Block
+    attr_accessor :statements
+    def initialize()
+        @statements = Array.new
+    end
+
+    def add_statement(statement)
+        @statements.append(statement)
+    end
+
+    def traverse(visitor, payload)
+        visitor.visit_block(self, payload)
+    end
+end
+
+
+class Assignment
+    attr_accessor :identifier, :right_node
+    def initialize(identifier, right_node)
+        @identifier = identifier
+        @right_node = right_node
+    end
+
+    def traverse(visitor, payload)
+        visitor.visit_assignment(self, payload)
+    end
+end
+
+class VariableReference
+    attr_accessor :variable, :value
+    def initialize(variable)
+        @variable = variable
+    end
+    def traverse(visitor, payload)
+        visitor.visit_variable_ref(self, payload)
+    end
+end
+
+
 class Conditional
     attr_accessor :condition, :if_block, :else_block
-    def initialize(cond, block1, block2)
+    def initialize(cond, if_block, else_block)
         @condition = cond
-        @block1 = if_block
-        @block2 = else_block
+        @if_block = if_block
+        @else_block = else_block
     end
     
     def traverse(visitor, payload)
@@ -224,7 +263,7 @@ class ForLoop
     end
 
     def traverse(visitor, payload)
-        visitor.visit_loop(self, payload)
+        visitor.visit_for_loop(self, payload)
     end
 
 end

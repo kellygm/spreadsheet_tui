@@ -9,3 +9,4 @@ require_relative '../Operation'
 runtime = Runtime.new(Grid.new(6,6))
 exp1 = Modulo.new(Multiply.new(IntegerPrimitive.new(7), Add.new(IntegerPrimitive.new(4), IntegerPrimitive.new(3))), IntegerPrimitive.new(12))
 puts exp1.traverse(Serializer.new, runtime)
+

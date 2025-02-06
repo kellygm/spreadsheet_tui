@@ -81,9 +81,22 @@ class Lexer
             elsif has(']')
                 capture
                 emit_token(:right_bracket, @i, @i)
+            elsif has('{')
+                capture
+                emit_token(:left_curly, @i, @i)
+            elsif has('}')
+                capture
+                emit_token(:right_curly, @i, @i)
             elsif has(',')
                 capture
                 emit_token(:comma, @i, @i)
+            elsif has ('.')
+                start_idx = @i
+                capture
+                if has('.')
+                    capture
+                    emit_token(:elipsis, start_idx, @i)
+                end
             elsif has('#')
                 capture
                 emit_token(:pound, @i, @i)
@@ -213,14 +226,24 @@ class Lexer
                     emit_token(:false, start_index, @i)
                 elsif keyword == 'castf'
                     emit_token(:to_f, start_index, @i)
-                elsif @tokens_so_far == 'casti'
+                elsif keyword == 'casti'
                     emit_token(:to_i, start_index, @i)
-                elsif @tokens_so_far == 'boolean'
+                elsif keyword == 'boolean'
                     emit_token(:bool, start_index, @i)
-                elsif @tokens_so_far == 'string'
+                elsif keyword == 'if'
+                    emit_token(:if, start_idx, @i)
+                elsif keyword == 'else'
+                    emit_token(:else, start_idx, @i)
+                elsif keyword == 'for'
+                    emit_token(:for, start_idx, @i)
+                elsif keyword == 'in'
+                    emit_token(:in, start_idx, @i)
+                elsif keyword == 'end'
+                    emit_token(:end, start_idx, @i)
+                elsif keyword == 'string'
                     emit_token(:str, start_index, @i) #just plain string
                 else
-                    emit_token(:etc, start_index, @i)
+                    emit_token(:identifier, start_idx, @i)
                 end
             #check for floats 
             elsif has_number
@@ -252,7 +275,3 @@ class Lexer
 
 
 end
-
-lexer = Lexer.new("2.0")
-tokens = lexer.lex
-puts lexer.print_tokens

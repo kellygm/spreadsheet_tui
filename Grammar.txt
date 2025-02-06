@@ -1,0 +1,83 @@
+This is the grammar for GridKid. It describes the rules 
+that any program written in this language must follow. 
+It also uses EBNF notation. 
+Includes 5+ levels of precendence.
+
+block = block
+        | statement
+        | expression
+
+statement = statement
+             | assignment
+             | variable_reference
+             | conditional
+             | for_loop
+             | expression
+
+assignment = primitive '=' parse_expression
+
+variable_reference = primitive
+
+conditional = 'if' expression block 'else' block 'end'
+
+for_loop = 'for' primitive 'in' CellAddressPrimitive '..' CellAddressPrimitive block 'end'
+
+expression = logic_or
+
+logic_or = logic_or '||' logic_and
+        | logic_and
+
+logic_and = bitwise_op '&&' logic_and
+        | bitwise
+
+bitwise_op = bitwise_op '|' rel_equals
+        | bitwise_op '^' rel_equals
+        | bitwise_op '&' rel_equals
+        | rel_equals
+
+rel_equals = rel_equals '==' rel_equals
+        | rel_equals '!=' rel_equals
+        | rel_operations
+
+rel_operations = rel_operations '<' bit_shift
+        | rel_operations '<=' bit_shift
+        | rel_operations '>' bit_shift
+        | rel_operations '<=' bit_shift
+        | bit_shift
+
+bit_shift = bit_shift '<<' arithmetic_op
+        | bit_shift '>>' arithmetic_op
+        | arithmetic_op
+
+arithmetic_op = arithmetic_op '+' multiplication_op
+        | arithmetic_op '-' multiplication_op
+        | multiplication_op
+
+multiplication_op = multiplication_op '*' exponent_op
+        | multiplication_op '/' exponent_op
+        | multiplication_op '%' exponent_op
+        | exponent_op
+
+exponent_op = exponent_op '**' not_op
+        | not_op
+
+not_op = '!' not_op
+        | '~' not_op
+        | '-' not_op
+        | primitive
+
+primitive = IntegerPrimitive
+        | FloatPrimitive
+        | BooleanPrimitive
+        | StringPrimitive
+        | CellAddressPrimitive
+        | casting
+        | statistical_op
+
+casting = casti'('expression')'
+        | castf'('expression')'
+
+statistical_op = sum '(' CellAddressPrimitive ',' CellAddressPrimitive ')'
+        | max  '(' CellAddressPrimitive ',' CellAddressPrimitive ')'
+        | min  '(' CellAddressPrimitive ',' CellAddressPrimitive ')'
+        | mean '(' CellAddressPrimitive ',' CellAddressPrimitive ')'
