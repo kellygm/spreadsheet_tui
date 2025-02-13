@@ -43,17 +43,19 @@ class Serializer
     end
 
     def visit_conditional(node, payload)
-        "if #{node.condition.traverse(self, payload)}\n\t#{node.if_block.traverse(self, payload)}\nelse\n\t#{node.else_block.traverse(self, payload)}\n end"
+        "if #{node.condition.traverse(self, payload)}\n\t#{node.if_block.traverse(self, payload)}\nelse\n\t#{node.else_block.traverse(self, payload)} end\n"
     end
 
     def visit_block(node, payload)
+        puts "{\n"
         for statement in node.statements
             puts "#{statement.traverse(self, payload)}\n"
         end
+        puts "}\n"
     end
 
     def visit_for_loop(node, payload)
-        "for #{node.iter} in #{node.start_addr.traverse(self, payload)}..#{node.end_addr.traverse(self,payload)}\n\t#{node.block.traverse(self, payload)}\n end"
+        "for #{node.iter} in #{node.start_addr.traverse(self, payload)}..#{node.end_addr.traverse(self,payload)}\n\t#{node.block.traverse(self, payload)} end\n"
     end
 # ----------------------------------------------------------------------------
 # ARITHMETIC 

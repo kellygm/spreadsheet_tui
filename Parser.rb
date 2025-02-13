@@ -43,23 +43,80 @@ class Parser
         root 
     end
 
+    # parse a block of statements
     def parse_block
-        parse_expression
+        block = Block.new
+        # skip '{'
+        if has(:left_curly)
+            advance
+        else
+            raise "Expected '{' at beginning of block"
+        end
+        while @i < @tokens.length && !has(:right_curly)
+            block.add_statement(parse_statement)
+        end
+        # skip '}'
+        if has(:right_curly)
+            advance
+        else
+            raise "Expected '}' at end of block"
+        end
+        block
     end
 
+    # parse a single statement
     def parse_statement
+        if has (:identifier)
+            parse_assignment
+        elsif has (:if)
+            parse_conditional
+        elsif has (:for)
+            parse_for_loop
+        else 
+            parse_expression
+        end
     end
 
+    # parse an assignment statement
     def parse_assignment
+        id = advance.source_txt
+        raise "Expected '=' after variable name" unless has(:equals)
+        advance # skip '='
+        right = parse_expression
+        Assignment.new(id, right)
     end
 
-    def parse_var_decl
+    # parse a conditional block
+    def parse_conditional
+        advance # skip 'if'
+        condition = parse_expression
+        if_block = parse_block
+        if has(:else)
+            advance # skip 'else'
+            else_block = parse_block
+        else
+            else_block = nil
+        end
+        advance # skip 'end'
+        Conditional.new(condition, if_block, else_block)
     end
 
-    def parse_loops
+    # parse a for loop block
+    def parse_for_loop
+        advance # skip 'for'
+        iter = advance.source_txt
+        raise "Expected 'in' after iterator" unless has(:in)
+        advance # skip 'in'
+        start_addr = parse_expression
+        raise "Expected '..' after start address" unless has(:elipsis)
+        advance # skip '..'
+        end_addr = parse_expression
+        block = parse_block
+        advance # skip 'end'
+        ForLoop.new(iter, start_addr, end_addr, block)
     end
 
-    # the root node
+    # parse expression
     def parse_expression
         parse_logic
     end
@@ -281,9 +338,17 @@ class Parser
         elsif has(:str)
             curr_token = advance
             StringPrimitive.new(curr_token.source_txt)
+        elsif has(:identifier)
+            parse_variable_ref
         else
             raise "Unsupported token: #{has(:etc)}  with value #{@tokens[@i] ? @tokens[@i].source_txt : 'EOF'} at index #{@i}"
         end
+    end
+
+    # parse variable reference
+    def parse_variable_ref
+        var = advance.source_txt
+        VariableReference.new(var)
     end
 
     # parse cell address primitive, either brackets or with pound symbol

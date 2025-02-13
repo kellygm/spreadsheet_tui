@@ -3,24 +3,19 @@ that any program written in this language must follow.
 It also uses EBNF notation. 
 Includes 5+ levels of precendence.
 
-block = block
-        | statement
-        | expression
+block = statement { statement }
 
 statement = statement
              | assignment
-             | variable_reference
              | conditional
              | for_loop
              | expression
 
-assignment = primitive '=' parse_expression
-
-variable_reference = primitive
+assignment = identifier '=' expression
 
 conditional = 'if' expression block 'else' block 'end'
 
-for_loop = 'for' primitive 'in' CellAddressPrimitive '..' CellAddressPrimitive block 'end'
+for_loop = 'for' identifier 'in' CellAddressPrimitive '..' CellAddressPrimitive block 'end'
 
 expression = logic_or
 
